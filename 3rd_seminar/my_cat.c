@@ -10,7 +10,7 @@
 int fd_write (int src, char* buf, int dest);
 ssize_t safe_write(int fd, char* buffer, size_t n);
 
-const int PAGE_SIZE = 4096;
+#define PAGE_SIZE 4096
 
 //-------------------------------------------------------------------
 int main(int argc, char** argv)
