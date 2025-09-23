@@ -2,17 +2,16 @@
 #include <fcntl.h>
 #include <stdbool.h>
 #include <stdio.h>
-#include <sys/stat.h>
+#include <string.h>
 #include <sys/types.h>
 #include <unistd.h>
-#include <string.h>
 
 int fd_write (int src, char* buf, int dest);
 ssize_t safe_write(int fd, char* buffer, size_t n);
 
 #define PAGE_SIZE 4096
 
-//-------------------------------------------------------------------
+//--------------------------------------------------------------
 int main(int argc, char** argv)
 {   
     char buf[PAGE_SIZE] = {};
@@ -25,7 +24,7 @@ int main(int argc, char** argv)
         int fd = open(argv[i], O_RDONLY);
         if(fd < 0)
         {
-            fprintf(stderr, "%s: %s\n", argv[i], strerror(errno));
+            fprintf(stderr, "%s: %s\n",argv[i], strerror(errno));
             continue;
         }
         
@@ -43,7 +42,7 @@ int main(int argc, char** argv)
         }
     }
 }
-//-------------------------------------------------------------------
+//--------------------------------------------------------------
 int fd_write (int src, char* buf, int dest)
 {
     while(true)
@@ -66,7 +65,7 @@ int fd_write (int src, char* buf, int dest)
     
     return 0;
 }
-//-------------------------------------------------------------------
+//--------------------------------------------------------------
 ssize_t safe_write(int fd, char* buf, size_t n)
 {
     ssize_t num_sym = 0;
@@ -95,4 +94,4 @@ ssize_t safe_write(int fd, char* buf, size_t n)
 
     return 0;
 }
-//-------------------------------------------------------------------
+//--------------------------------------------------------------
