@@ -25,4 +25,3 @@ int main(int argc, char** argv)
 
     printf("Elapsed_time = %lf microseconds\n", elapsed_time);
 }
-

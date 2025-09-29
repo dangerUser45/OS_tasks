@@ -180,7 +180,8 @@ ssize_t safe_write(int fd, const char* filename, char* buf, size_t n)
 
     while(true)
     {
-        num_sym = write(fd, buf + num_sym, n);
+        buf += num_sym; n -= num_sym;
+        num_sym = write(fd, buf, n);
         if(num_sym < 0)
         {
             if(errno != EINTR)
