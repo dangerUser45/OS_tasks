@@ -25,12 +25,12 @@ int safe_open(const char* file, int oflag, int mode);
 int safe_close(int fd, const char* filename);
 int fd_write(int fd_src, int fd_dest, const char *filename_src,
              const char* filename_dest, char* buf, struct wc_stat* stat);
-ssize_t safe_write(int fd, const char* filename, char* buf, size_t n);
+ssize_t safe_write(int fd, const char* filename, char* buf, ssize_t n);
 
 void find_lines(ssize_t* counter, const char* str);
 void find_words(ssize_t* counter, const char* str, struct word_state_t* state);
 
-#define PAGE_SIZE 4096
+#define PAGE_SIZE 1
 
 //--------------------------------------------------------------
 int main(int argc, char** argv)
@@ -68,7 +68,7 @@ int safe_open(const char* file, int oflag, int mode)
     if(mode == 0)
         fd = open(file, oflag);
     else
-        fd =  open(file, oflag, mode);
+        fd = open(file, oflag, mode);
     
     if(fd < 0)
         fprintf(stderr, "%s: %s\n", file, strerror(errno));
@@ -113,7 +113,7 @@ int fd_write(int fd_src, int fd_dest, const char* filename_src,
     return 0;
 }
 //--------------------------------------------------------------
-ssize_t safe_write(int fd, const char* filename, char* buf, size_t n)
+ssize_t safe_write(int fd, const char* filename, char* buf, ssize_t n)
 {
     ssize_t num_sym = 0;
 

@@ -4,54 +4,14 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <sys/stat.h>
-#include <sys/types.h>
-#include <sys/wait.h>
 #include <unistd.h>
 
-int safe_open(const char* file, int oflag, int mode);
-int safe_close(int fd, const char* filename);
-int fd_write(int fd_src, int fd_dest, const char *filename_src,
-             const char* filename_dest, char* buf);
-ssize_t safe_write(int fd, const char* filename, char* buf, size_t n);
+#include "../include/safe_lib.h"
 
-#define PAGE_SIZE 4096
+#ifndef PAGE_SIZE
+  #define PAGE_SIZE 4096
+#endif
 
-//--------------------------------------------------------------
-int main(int argc, char** argv)
-{
-    char buf[PAGE_SIZE] = {};
-    int fds[2] = {}; // pipe[0] - end, pipe[1] - start
-    pipe(fds);
-
-    pid_t pid = fork();
-
-    if(pid != 0) // parent pid - only reader
-    {
-        safe_close(fds[1], "pipe input");
-        int status = 0;
-        fd_write(fds[0], 1,
-            "pipe output", "pipe_input", buf);
-        wait(&status);
-    }
-    else //child pid - only writer
-    {
-        safe_close(fds[0], "pipe output");
-
-        for(int i = 1; i < argc; ++i)
-        {
-            int fd_src = safe_open(argv[i], O_RDONLY, 0);
-            if (fd_src < 0)
-                continue;
-
-            fd_write(fd_src, fds[1], "stdin", "pipe input", buf);
-
-            int error = safe_close(fd_src, argv[i]);
-            if(error < 0)
-              continue;       
-        }
-    }
-}
 //--------------------------------------------------------------
 int safe_open(const char* file, int oflag, int mode)
 {
@@ -100,7 +60,7 @@ int fd_write(int fd_src, int fd_dest, const char* filename_src,
     return 0;
 }
 //--------------------------------------------------------------
-ssize_t safe_write(int fd, const char* filename, char* buf, size_t n)
+ssize_t safe_write(int fd, const char* filename, char* buf, ssize_t n)
 {
     ssize_t num_sym = 0;
 
@@ -128,5 +88,32 @@ ssize_t safe_write(int fd, const char* filename, char* buf, size_t n)
     }
 
     return 0;
+}
+//--------------------------------------------------------------
+pid_t safe_fork(void) {
+  pid_t pid = fork();
+  if(pid == -1) {
+    perror("fork");
+    exit(-1);
+  }
+  return pid;
+}
+//--------------------------------------------------------------
+int safe_pipe(int pipedes[2]) {
+  int code_error = pipe(pipedes);
+  if(code_error == - 1) {
+    perror("pipe");
+    exit(-1);
+  }
+  return code_error;
+}
+//--------------------------------------------------------------
+int safe_dup2 (int fd, int fd2) {
+  int code_error = dup2(fd, fd2);
+  if(code_error == -1) {
+    perror("dup2");
+    exit(-1);
+  }
+  return code_error;
 }
 //--------------------------------------------------------------
