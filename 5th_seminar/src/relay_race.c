@@ -9,7 +9,7 @@
 #include "../../lib/include/safe_lib.h"
 #include "../../lib/include/color.h"
 
-#define DEBUG
+// #define DEBUG
 #ifdef DEBUG
   #define printf(format, ...) { \
     fprintf(stdout, format, ##__VA_ARGS__); fflush(stdout);\
@@ -103,7 +103,7 @@ void runners(int queue_id, int number_runners, int id_runner) {
   struct msgbuf msgbuf = {number_runners + 2, id_runner};
   msgsnd(queue_id, &msgbuf, sizeof(msgbuf.senders_id), 0);
 
-  //Runners pass the baton
+  //Runners pass the batton
   msgrcv(queue_id, &msgbuf, sizeof(msgbuf.senders_id), id_runner, 0);
   printf(RED "-Runner " SKY_BLUE "%d: " RESET
         "I get the batton from %s "
@@ -121,7 +121,7 @@ const char* where_from(int senders_id) {
   else if(senders_id == 3) return SKY_BLUE "3rd " RESET "runner";
   else {
     static char buf[256];
-    sprintf(buf, SKY_BLUE "%dth " RESET "runner", senders_id - 1);
+    sprintf(buf, SKY_BLUE "%dth " RESET "runner", senders_id);
     return buf;
   }
 }
