@@ -1,13 +1,12 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <sys/ipc.h>
-#include <sys/msg.h>
 #include <sys/time.h>
 #include <sys/types.h>
 #include <sys/wait.h>
 
-#include "../../lib/include/safe_lib.h"
-#include "../../lib/include/color.h"
+#include "color.h"
+#include "safe_lib.h"
 
 // #define DEBUG
 #ifdef DEBUG
@@ -33,11 +32,10 @@ int main(int argc, char** argv){
   }
 
   int number_runners = atoi(argv[1]);
-  int queue_id = msgget(IPC_PRIVATE, IPC_CREAT | 0666);
+  int queue_id = safe_msgget(IPC_PRIVATE, IPC_CREAT | 0666);
   
   pid_t pid_judge = safe_fork();
   if(pid_judge == 0) {
-    //sleep(3);
     judge(queue_id, number_runners);
     exit(0);
   }
@@ -55,7 +53,7 @@ int main(int argc, char** argv){
     wait(&status);
   }
 
-  msgctl(queue_id, IPC_RMID, 0);
+  safe_msgctl(queue_id, IPC_RMID, 0);
 }
 //--------------------------------------------------------------
 void judge(int queue_id, int number_runners) {
@@ -67,9 +65,9 @@ void judge(int queue_id, int number_runners) {
   //Judge wait runners
   struct msgbuf msgbuf = {};
   for (int i = 0; i < number_runners; ++i) {
-    msgrcv(queue_id, &msgbuf,
+    safe_msgrcv(queue_id, &msgbuf,
       sizeof(msgbuf.senders_id), number_runners + 2, 0);
-      printf(COLOR_TEXT(YELLOW, "-Judge:    ")
+    printf(COLOR_TEXT(YELLOW, "-Judge:    ")
           "I waited for the %d runner\n", msgbuf.senders_id);
   }
 
@@ -82,9 +80,9 @@ void judge(int queue_id, int number_runners) {
 
   msgbuf.mtype = 1;
   msgbuf.senders_id = 0;
-  msgsnd(queue_id, &msgbuf, sizeof(msgbuf.senders_id),  0);
+  safe_msgsnd(queue_id, &msgbuf, sizeof(msgbuf.senders_id),  0);
 
-  msgrcv(queue_id, &msgbuf, sizeof(msgbuf.senders_id), number_runners + 1, 0);
+  safe_msgrcv(queue_id, &msgbuf, sizeof(msgbuf.senders_id), number_runners + 1, 0);
   gettimeofday(&end, 0);
 
   printf(YELLOW "-Judge:    " RESET
@@ -101,17 +99,17 @@ void runners(int queue_id, int number_runners, int id_runner) {
 
   //Runners tell the judge that they are ready for the relay race
   struct msgbuf msgbuf = {number_runners + 2, id_runner};
-  msgsnd(queue_id, &msgbuf, sizeof(msgbuf.senders_id), 0);
+  safe_msgsnd(queue_id, &msgbuf, sizeof(msgbuf.senders_id), 0);
 
   //Runners pass the batton
-  msgrcv(queue_id, &msgbuf, sizeof(msgbuf.senders_id), id_runner, 0);
+  safe_msgrcv(queue_id, &msgbuf, sizeof(msgbuf.senders_id), id_runner, 0);
   printf(RED "-Runner " SKY_BLUE "%d: " RESET
         "I get the batton from %s "
         "and now start running\n", id_runner, where_from(msgbuf.senders_id));
 
   msgbuf.mtype = id_runner + 1;
   msgbuf.senders_id = id_runner;
-  msgsnd(queue_id, &msgbuf, sizeof(msgbuf.senders_id), 0);
+  safe_msgsnd(queue_id, &msgbuf, sizeof(msgbuf.senders_id), 0);
 }
 //--------------------------------------------------------------
 const char* where_from(int senders_id) {  

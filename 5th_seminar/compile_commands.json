@@ -1,0 +1,17 @@
+[
+  {
+    "directory": "/home/danek/projects/third_semestr/5th_seminar",
+    "file": "src/relay_race.c",
+    "output": "build/relay_race.o",
+    "arguments": [
+      "clang",
+      "-c",
+      "src/relay_race.c",
+      "-I../lib/include",
+      "-Wall",
+      "-Wextra",
+      "-o",
+      "build/relay_race.o"
+    ]
+  }
+]

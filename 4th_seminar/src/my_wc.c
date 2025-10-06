@@ -35,31 +35,36 @@ void find_words(ssize_t* counter, const char* str, struct word_state_t* state);
 //--------------------------------------------------------------
 int main(int argc, char** argv)
 {
-    char buf[PAGE_SIZE] = {};
-    struct wc_stat stat = {};
-    int fds[2] = {}; // pipe[0] - end, pipe[1] - start
-    pipe(fds);
+  if (argc == 1) {
+    fprintf(stderr, "main: too few arguments\n");
+    return -1;
+  }
+  
+  char buf[PAGE_SIZE] = {};
+  struct wc_stat stat = {};
+  int fds[2] = {}; // pipe[0] - end, pipe[1] - start
+  pipe(fds);
 
-    pid_t pid = fork();
+  pid_t pid = fork();
 
-    if(pid != 0) // parent pid - only reader
-    {
-        safe_close(fds[1], "pipe input");
-        fd_write(fds[0], 1,
-    "pipe output", "pipe_input", buf, &stat);
-        int status = 0;
-        wait(&status);
-        fprintf(stdout, "% ld %ld %ld %s\n",
-                stat.lines_counter, stat.words_counter,
-                stat.bytes_counter, argv[2]);
-    }
-    else //child pid - only writer
-    {
-        safe_close(fds[0], "pipe output");
-        dup2(fds[1], 1);
-        close(fds[1]);
-        execvp( argv[1], &(argv[1]));
-    }
+  if(pid != 0) // parent pid - only reader
+  {
+      safe_close(fds[1], "pipe input");
+      fd_write(fds[0], 1,
+  "pipe output", "pipe_input", buf, &stat);
+      int status = 0;
+      wait(&status);
+      fprintf(stdout, "% ld %ld %ld %s\n",
+              stat.lines_counter, stat.words_counter,
+              stat.bytes_counter, argv[2]);
+  }
+  else //child pid - only writer
+  {
+      safe_close(fds[0], "pipe output");
+      dup2(fds[1], 1);
+      close(fds[1]);
+      execvp( argv[1], &(argv[1]));
+  }
 }
 //--------------------------------------------------------------
 int safe_open(const char* file, int oflag, int mode)

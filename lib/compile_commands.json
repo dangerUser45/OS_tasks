@@ -1,0 +1,17 @@
+[
+  {
+    "directory": "/home/danek/projects/third_semestr/lib",
+    "file": "src/safe_lib.c",
+    "output": "build/safe_lib.o",
+    "arguments": [
+      "clang",
+      "-c",
+      "src/safe_lib.c",
+      "-I./include",
+      "-Wall",
+      "-Wextra",
+      "-o",
+      "build/safe_lib.o"
+    ]
+  }
+]
