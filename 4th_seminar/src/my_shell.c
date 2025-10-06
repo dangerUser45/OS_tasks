@@ -9,14 +9,15 @@
 #include <sys/wait.h>
 #include <unistd.h>
 
-#include "safe_lib.h"
 #include "parser.h"
+#include "safe_lib.h"
 
 static void die(const char *fmt, ...);
 static char *join_args(int argc, char **argv);
 static ssize_t read_line(const char *prompt, char **line, size_t *cap);
 static int append_last_command_from_stdin(struct Pipeline *pl);
 static int run_pipeline(struct Pipeline *pl);
+static void close_quiet(int fd);
 static int run_one_line(const char *line);
 
 //--------------------------------------------------------------
@@ -116,6 +117,10 @@ static int append_last_command_from_stdin(struct Pipeline *pl) {
   return 0;
 }
 //--------------------------------------------------------------
+static void close_quiet(int fd){
+  if(fd>=0) close(fd);
+}
+//--------------------------------------------------------------
 static int run_pipeline(struct Pipeline *pl) {
   if (!pl || pl->ncmds <= 0) return 0;
   int n = pl->ncmds;
@@ -126,8 +131,8 @@ static int run_pipeline(struct Pipeline *pl) {
     for (int i = 0; i < n - 1; ++i) {
       if (safe_pipe(pipes[i]) < 0) {
         for (int k = 0; k < i; ++k) {
-          safe_close(pipes[k][0], "pipe");
-          safe_close(pipes[k][1], "pipe");
+          close_quiet(pipes[k][0]);
+          close_quiet(pipes[k][1]);
         }
         free(pipes);
         return 1;
@@ -139,8 +144,8 @@ static int run_pipeline(struct Pipeline *pl) {
     perror("calloc");
     if (pipes) {
       for (int i = 0; i < n - 1; ++i) {
-        safe_close(pipes[i][0], "pipe");
-        safe_close(pipes[i][1], "pipe");
+        close_quiet(pipes[i][0]);
+        close_quiet(pipes[i][1]);
       }
     }
     free(pipes);
@@ -171,8 +176,8 @@ static int run_pipeline(struct Pipeline *pl) {
       }
       if (pipes) {
         for (int k = 0; k < n - 1; ++k) {
-          safe_close(pipes[k][0], "pipe");
-          safe_close(pipes[k][1], "pipe");
+          close_quiet(pipes[k][0]);
+          close_quiet(pipes[k][1]);
         }
       }
       execvp(pl->cmds[i].argv[0], pl->cmds[i].argv);
@@ -180,8 +185,8 @@ static int run_pipeline(struct Pipeline *pl) {
       _exit(127);
     }
     pids[i] = pid;
-    if (i > 0) safe_close(pipes[i - 1][0], "pipe");
-    if (i < n - 1) safe_close(pipes[i][1], "pipe");
+    if (i > 0) close_quiet(pipes[i - 1][0]);
+    if (i < n - 1) close_quiet(pipes[i][1]);
   }
   free(pipes);
   int status = 0;
