@@ -151,7 +151,6 @@ static int run_pipeline(struct Pipeline *pl) {
     free(pipes);
     return 1;
   }
-  signal(SIGPIPE, SIG_IGN);
   for (int i = 0; i < n; ++i) {
     pid_t pid = safe_fork();
     if (pid == 0) {
@@ -182,7 +181,7 @@ static int run_pipeline(struct Pipeline *pl) {
       }
       execvp(pl->cmds[i].argv[0], pl->cmds[i].argv);
       perror(pl->cmds[i].argv[0]);
-      _exit(127);
+      exit(-1);
     }
     pids[i] = pid;
     if (i > 0) close_quiet(pipes[i - 1][0]);

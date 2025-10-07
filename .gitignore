@@ -2,6 +2,3 @@
 */*.txt
 */*.out
 */.cache
-./4th_seminar/src/my_myshell.c
-./4th_seminar/src/my_parser.c
-

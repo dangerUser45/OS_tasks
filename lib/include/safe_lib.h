@@ -1,8 +1,10 @@
+
 #pragma once
 
 #include <stddef.h>
 #include <sys/types.h>
 #include <sys/ipc.h>
+#include <mqueue.h>
 
 struct msqid_ds;
 
@@ -22,3 +24,11 @@ int safe_msgsnd(int queue_id, const void* msg_buf, size_t msg_size,
 ssize_t safe_msgrcv(int queue_id, void* msg_buf, size_t msg_size,
                     long msg_type, int msg_flags);
 int safe_msgctl(int queue_id, int cmd, struct msqid_ds* buf);
+
+mqd_t safe_mq_open (const char* name, int oflag, ...);
+int safe_mq_send(mqd_t mqdes, const char *msg_ptr,
+                 size_t msg_len, unsigned msg_prio);
+ssize_t safe_mq_receive(mqd_t mqdes, char *msg_ptr,
+                        size_t msg_len, unsigned *msg_prio);
+int safe_mq_close(mqd_t queue_id);
+int safe_mq_unlink(const char* name);

@@ -6,6 +6,8 @@
 #include <string.h>
 #include <sys/msg.h>
 #include <unistd.h>
+#include <mqueue.h>
+#include <stdarg.h>
 
 #include "safe_lib.h"
 
@@ -147,4 +149,62 @@ int safe_msgctl(int queue_id, int cmd, struct msqid_ds* buf) {
 
   return code_error;
 }   
+//--------------------------------------------------------------
+mqd_t safe_mq_open (const char* name, int oflag, ...) {
+  mqd_t mqd = {};
+  if (oflag & O_CREAT) {
+    va_list ap;
+    va_start(ap, oflag);
+    mode_t mode = va_arg(ap, mode_t);
+    struct mq_attr* attr = va_arg(ap, struct mq_attr*);
+    va_end(ap);
+
+    mqd = mq_open(name, oflag, mode, attr);
+  }
+  else mqd = mq_open(name, oflag);
+
+  if (mqd == (mqd_t) -1) {
+    perror("mq_open");
+    exit(-1);
+  }
+  return mqd;
+}
+//--------------------------------------------------------------
+int safe_mq_send(mqd_t mqdes, const char *msg_ptr,
+                 size_t msg_len, unsigned msg_prio) {
+  int code_error = mq_send(mqdes, msg_ptr, msg_len, msg_prio);
+  if(code_error == -1) {
+    perror("mq_send");
+    exit(-1);
+  }
+  return code_error;
+}
+//--------------------------------------------------------------
+ssize_t safe_mq_receive(mqd_t mqdes, char *msg_ptr,
+                        size_t msg_len, unsigned *msg_prio) {
+  int code_error = mq_receive(mqdes, msg_ptr, msg_len, msg_prio);
+  if(code_error == -1) {
+    perror("mq_receive");
+    exit(-1);
+  }
+  return code_error;
+}
+//--------------------------------------------------------------
+int safe_mq_close(mqd_t queue_id) {
+  int code_error = mq_close(queue_id);
+  if(code_error == -1) {
+    perror("mq_close");
+    exit(-1);
+  }
+  return code_error;
+}
+//--------------------------------------------------------------
+int safe_mq_unlink(const char* name) {
+  int code_error = mq_unlink(name);
+  if(code_error == -1) {
+    perror("mq_inlink");
+    exit(-1);
+  }
+  return code_error;
+}
 //--------------------------------------------------------------
