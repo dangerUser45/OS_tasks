@@ -26,16 +26,13 @@ struct Context {
 };
 
 //from <bits/sem.h>
-#if defined(__GNU_LIBRARY__) && !defined(_SEM_SEMUN_UNDEFINED)
-/* union semun is defined by including <sys/sem.h> */
-#else
-/* according to X/OPEN we have to define it ourselves */
+#if defined(_SEM_SEMUN_UNDEFINED)
 union semun
 {
-  int val;				           //<= value for SETVAL
-  struct semid_ds *buf;		   //<= buffer for IPC_STAT & IPC_SET
+  int val;                   //<= value for SETVAL
+  struct semid_ds *buf;      //<= buffer for IPC_STAT & IPC_SET
   unsigned short int *array; //<= array for GETALL & SETALL
-  struct seminfo *__buf;		 //<= buffer for IPC_INFO
+  struct seminfo *__buf;     //<= buffer for IPC_INFO
 };
 #endif
 
@@ -84,9 +81,6 @@ void man(int man_id, const struct Context* context) {
   };
   semop(context->sem_id, op_open, 3);
 
-  // int free_seats = safe_semctl(context->sem_id, SHOWER_CAPACITY, GETVAL);
-  // printf("current people in shower = %d\n", context->number_seats - free_seats); fflush(stdout);
-
   struct sembuf print_op = {PRINT_SEM, -1, 0};
   safe_semop(context->sem_id, &print_op, 1);
   printf(BLUE "I'm a %d man" RESET "\n", man_id);
@@ -110,9 +104,6 @@ void woman(int woman_id, const struct Context* context) {
     {WOMEN_CUR_NUM, 1, 0}
   };
   semop(context->sem_id, op_open, 3);
-
-  // int free_seats = safe_semctl(context->sem_id, SHOWER_CAPACITY, GETVAL);
-  // printf("current people in shower = %d\n", context->number_seats - free_seats); fflush(stdout);
   
   struct sembuf print_op = {PRINT_SEM, -1, 0};
   safe_semop(context->sem_id, &print_op, 1);
