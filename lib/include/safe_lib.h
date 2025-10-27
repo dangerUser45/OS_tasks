@@ -1,12 +1,15 @@
 
 #pragma once
 
-#include <stddef.h>
-#include <sys/types.h>
-#include <sys/ipc.h>
-#include <mqueue.h>
+#include <mqueue.h>     // for mqd_t
+#include <stdbool.h>    // for bool
+#include <stddef.h>     // for size_t
+#include <sys/types.h>  // for ssize_t, key_t, pid_t
 
 struct msqid_ds;
+struct sembuf;
+
+bool check_args(int argc, int neccesary_argc);
 
 int safe_open(const char* file, int oflag, int mode);
 int safe_close(int fd, const char* filename);
@@ -32,3 +35,8 @@ ssize_t safe_mq_receive(mqd_t mqdes, char *msg_ptr,
                         size_t msg_len, unsigned *msg_prio);
 int safe_mq_close(mqd_t queue_id);
 int safe_mq_unlink(const char* name);
+
+int safe_semget (key_t key, int num_semaphors, int semflg);
+int safe_semctl (int semid, int semnum, int cmd, ...);
+int safe_semop(int semid, struct sembuf *operations_array,
+               unsigned number_operations);

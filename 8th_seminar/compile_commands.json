@@ -1,0 +1,17 @@
+[
+  {
+    "directory": "/home/danek/projects/computer_science_3rd_semester/8th_seminar",
+    "file": "src/pthreads_cat.c",
+    "output": "build/pthreads_cat.o",
+    "arguments": [
+      "clang",
+      "-c",
+      "src/pthreads_cat.c",
+      "-I../lib/include",
+      "-Wall",
+      "-Wextra",
+      "-o",
+      "build/pthreads_cat.o"
+    ]
+  }
+]

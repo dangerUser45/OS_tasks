@@ -1,0 +1,17 @@
+[
+  {
+    "directory": "/home/danek/projects/computer_science_3rd_semester/7th_seminar",
+    "file": "src/mmap_cp.c",
+    "output": "build/mmap_cp.o",
+    "arguments": [
+      "clang",
+      "-c",
+      "src/mmap_cp.c",
+      "-I../lib/include",
+      "-Wall",
+      "-Wextra",
+      "-o",
+      "build/mmap_cp.o"
+    ]
+  }
+]

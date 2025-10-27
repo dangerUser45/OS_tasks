@@ -1,6 +1,6 @@
 [
   {
-    "directory": "/home/danek/projects/third_semestr/lib",
+    "directory": "/home/danek/projects/computer_science_3rd_semester/lib",
     "file": "src/safe_lib.c",
     "output": "build/safe_lib.o",
     "arguments": [

@@ -16,10 +16,6 @@
     fprintf(stdout, format, ##__VA_ARGS__); fflush(stdout);\
   }
 #endif
-struct msgbuf {  
-  long mtype;
-  int senders_id;
-};
 
 #define NO_PRIORITY 0
 #define BUF_SIZE 256

@@ -1,17 +1,32 @@
 [
   {
-    "directory": "/home/danek/projects/third_semestr/5th_seminar",
-    "file": "src/relay_race.c",
-    "output": "build/relay_race.o",
+    "directory": "/home/danek/projects/computer_science_3rd_semester/5th_seminar",
+    "file": "src/att_relay_race.c",
+    "output": "build/att_relay_race.o",
     "arguments": [
       "clang",
       "-c",
-      "src/relay_race.c",
+      "src/att_relay_race.c",
       "-I../lib/include",
       "-Wall",
       "-Wextra",
       "-o",
-      "build/relay_race.o"
+      "build/att_relay_race.o"
+    ]
+  },
+  {
+    "directory": "/home/danek/projects/computer_science_3rd_semester/5th_seminar",
+    "file": "src/posix_relay_race.c",
+    "output": "build/posix_relay_race.o",
+    "arguments": [
+      "clang",
+      "-c",
+      "src/posix_relay_race.c",
+      "-I../lib/include",
+      "-Wall",
+      "-Wextra",
+      "-o",
+      "build/posix_relay_race.o"
     ]
   }
 ]

@@ -1,0 +1,17 @@
+[
+  {
+    "directory": "/home/danek/projects/computer_science_3rd_semester/6th_seminar",
+    "file": "src/shower.c",
+    "output": "build/shower.o",
+    "arguments": [
+      "clang",
+      "-c",
+      "src/shower.c",
+      "-I../lib/include",
+      "-Wall",
+      "-Wextra",
+      "-o",
+      "build/shower.o"
+    ]
+  }
+]

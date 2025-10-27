@@ -1,6 +1,6 @@
 [
   {
-    "directory": "/home/danek/projects/third_semestr/4th_seminar",
+    "directory": "/home/danek/projects/computer_science_3rd_semester/4th_seminar",
     "file": "src/myshell.c",
     "output": "build/myshell.o",
     "arguments": [
@@ -17,7 +17,7 @@
     ]
   },
   {
-    "directory": "/home/danek/projects/third_semestr/4th_seminar",
+    "directory": "/home/danek/projects/computer_science_3rd_semester/4th_seminar",
     "file": "src/parser.c",
     "output": "build/parser.o",
     "arguments": [

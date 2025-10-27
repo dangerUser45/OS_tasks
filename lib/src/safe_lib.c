@@ -1,13 +1,15 @@
-#include <errno.h>
-#include <fcntl.h>
-#include <stdbool.h>
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-#include <sys/msg.h>
-#include <unistd.h>
-#include <mqueue.h>
-#include <stdarg.h>
+#include <errno.h>     // for EINTR, errno
+#include <fcntl.h>     // for open, O_CREAT
+#include <features.h>  // for __GNU_LIBRARY__
+#include <mqueue.h>    // for mqd_t, mq_open, mq_close, mq_receive, mq_send
+#include <stdarg.h>    // for va_arg, va_end, va_list, va_start
+#include <stdbool.h>   // for true, bool, false
+#include <stdio.h>     // for perror, fprintf, stderr
+#include <stdlib.h>    // for exit
+#include <sys/ipc.h>   // for IPC_RMID
+#include <sys/msg.h>   // for msgctl, msgget, msgrcv, msgsnd
+#include <sys/sem.h>   // for semctl, semget, semop, GETNCNT, GETPID, GETVAL
+#include <unistd.h>    // for close, dup2, fork, pipe, read, write
 
 #include "safe_lib.h"
 
@@ -15,6 +17,28 @@
   #define PAGE_SIZE 4096
 #endif
 
+
+#if defined(__GNU_LIBRARY__) && !defined(_SEM_SEMUN_UNDEFINED)
+/* union semun is defined by including <sys/sem.h> */
+#else
+/* according to X/OPEN we have to define it ourselves */
+union semun {
+      int val;                  /* value for SETVAL */
+      struct semid_ds *buf;     /* buffer for IPC_STAT, IPC_SET */
+      unsigned short *array;    /* array for GETALL, SETALL */
+                                /* Linux specific part: */
+      struct seminfo *__buf;    /* buffer for IPC_INFO */
+};
+#endif
+
+//--------------------------------------------------------------
+bool check_args(int argc, int neccesary_argc) {
+  if (argc != neccesary_argc) {
+    fprintf(stderr, "Error: check_args: Invalid number of arguments\n");
+    exit(-1);
+  }
+  return false;
+}
 //--------------------------------------------------------------
 int safe_open(const char* file, int oflag, int mode) {
   int fd = 0;
@@ -153,11 +177,11 @@ int safe_msgctl(int queue_id, int cmd, struct msqid_ds* buf) {
 mqd_t safe_mq_open (const char* name, int oflag, ...) {
   mqd_t mqd = {};
   if (oflag & O_CREAT) {
-    va_list ap;
-    va_start(ap, oflag);
-    mode_t mode = va_arg(ap, mode_t);
-    struct mq_attr* attr = va_arg(ap, struct mq_attr*);
-    va_end(ap);
+    va_list args;
+    va_start(args, oflag);
+    mode_t mode = va_arg(args, mode_t);
+    struct mq_attr* attr = va_arg(args, struct mq_attr*);
+    va_end(args);
 
     mqd = mq_open(name, oflag, mode, attr);
   }
@@ -206,5 +230,46 @@ int safe_mq_unlink(const char* name) {
     exit(-1);
   }
   return code_error;
+}
+//--------------------------------------------------------------
+int safe_semget (key_t key, int num_semaphors, int semflg) { 
+  int code_error = semget(key, num_semaphors, semflg);
+  if(code_error == -1) {
+    perror("semget");
+    exit(-1);
+  }
+  return code_error;
+}
+//--------------------------------------------------------------
+int safe_semctl (int semid, int semnum, int cmd, ...) {
+  int error = 0;
+
+  // Команды, которые не используют arg
+  if (cmd == GETVAL  || cmd == GETPID || cmd == GETNCNT || 
+      cmd == GETZCNT || cmd == IPC_RMID)
+    error = semctl(semid, semnum, cmd);
+  else {
+    va_list args;
+    va_start(args, cmd);
+    union semun arg = va_arg(args, union semun);
+    va_end(args);
+
+    error = semctl(semid, semnum, cmd, arg);
+  }
+  if(error == -1) {
+    perror("semctl");
+    exit(-1);
+  }
+  return error;
+}
+//--------------------------------------------------------------
+int safe_semop(int semid, struct sembuf *operations_array,
+               unsigned number_operations) {
+  int error = semop(semid, operations_array, number_operations);
+  if(error < 0) {
+    perror("semop");
+    exit(-1);
+  }
+  return error;
 }
 //--------------------------------------------------------------
