@@ -49,7 +49,7 @@ static void signal_sem(int sem_id, int num_sem);
 int main(int argc, char** argv) {
   check_args(argc, 4);
 
-  int sem_id = safe_semget(IPC_PRIVATE, 8, IPC_CREAT | 0666);
+  int sem_id = safe_semget(IPC_PRIVATE, 7, IPC_CREAT | 0666);
 
   int shower_capacity = atoi(argv[1]);
   int number_men    = atoi(argv[2]);
@@ -60,13 +60,12 @@ int main(int argc, char** argv) {
                                   .shower_capacity = shower_capacity,
                                   .number_men   = number_men,
                                   .number_women = number_women};
-  unsigned short value_arr[8] = {
+  unsigned short value_arr[] = {
     shower_capacity,
     0,
     0,
     number_men,
     number_women,
-    1,
     1,
     1
   };
@@ -108,22 +107,19 @@ void man(int man_id, const struct Context* context) {
   struct sembuf op_open[] = {
     {SHOWER_CAPACITY, -1, 0},
     {LOCAL_MEN_NUM, 1  , 0},
-    {LOCAL_WOMEN_NUM, 0, 0}  };
-  semop(context->sem_id, op_open, 3);
+  };
+  semop(context->sem_id, op_open, 2);
 
-  // wait_sem(sem_id, PRINT_MUTEX);
-  printf(BLUE "I'm a %d man" RESET "\n", man_id);
-  // signal_sem(sem_id, PRINT_MUTEX);
+  printf(BLUE "I'm a %d man" RESET "\n", man_id); fflush(stdout);
 
   struct sembuf op_exit[] = {
     {SHOWER_CAPACITY, 1, 0},
     {LOCAL_MEN_NUM, -1, 0},
-    {LOCAL_WOMEN_NUM, 0, 0}
   };
   semop(context->sem_id, op_exit, 3);
 
   wait_sem(sem_id, END_MUTEX);
-  if(safe_semctl(sem_id, GLOBAL_MEN_NUM, GETVAL) == 0
+  if(safe_semctl(sem_id, SHOWER_CAPACITY, GETVAL) == context->shower_capacity
     && safe_semctl(sem_id, LOCAL_MEN_NUM, GETVAL) == 0) {
     union semun arg = {.val = context->number_women};
     safe_semctl(sem_id, GLOBAL_WOMEN_NUM, SETVAL, arg);
@@ -152,17 +148,14 @@ void woman(int woman_id, const struct Context* context) {
 
   struct sembuf op_open[] = {
     {SHOWER_CAPACITY, -1, 0},
-    {LOCAL_MEN_NUM, 0  , 0},
-    {LOCAL_WOMEN_NUM, 1, 0}  };
-  safe_semop(context->sem_id, op_open, 3);
+    {LOCAL_WOMEN_NUM, 1, 0}
+  };
+  safe_semop(context->sem_id, op_open, 2);
 
-  // wait_sem(sem_id, PRINT_MUTEX);
   printf(PINK "I'm a %d woman" RESET "\n", woman_id);
-  // signal_sem(sem_id, PRINT_MUTEX);
 
   struct sembuf op_exit[] = {
     {SHOWER_CAPACITY, 1, 0},
-    {LOCAL_MEN_NUM, 0, 0},
     {LOCAL_WOMEN_NUM, -1, 0}
   };
   safe_semop(context->sem_id, op_exit, 3);

@@ -17,17 +17,14 @@
   #define PAGE_SIZE 4096
 #endif
 
-
-#if defined(__GNU_LIBRARY__) && !defined(_SEM_SEMUN_UNDEFINED)
-/* union semun is defined by including <sys/sem.h> */
-#else
-/* according to X/OPEN we have to define it ourselves */
-union semun {
-      int val;                  /* value for SETVAL */
-      struct semid_ds *buf;     /* buffer for IPC_STAT, IPC_SET */
-      unsigned short *array;    /* array for GETALL, SETALL */
-                                /* Linux specific part: */
-      struct seminfo *__buf;    /* buffer for IPC_INFO */
+//from <bits/sem.h>
+#if defined(_SEM_SEMUN_UNDEFINED)
+union semun
+{
+  int val;                   //<= value for SETVAL
+  struct semid_ds *buf;      //<= buffer for IPC_STAT & IPC_SET
+  unsigned short int *array; //<= array for GETALL & SETALL
+  struct seminfo *__buf;     //<= buffer for IPC_INFO
 };
 #endif
 
@@ -35,7 +32,7 @@ union semun {
 bool check_args(int argc, int neccesary_argc) {
   if (argc != neccesary_argc) {
     fprintf(stderr, "Error: check_args: Invalid number of arguments\n");
-    exit(-1);
+    exit(EXIT_FAILURE);
   }
   return false;
 }
@@ -106,7 +103,7 @@ pid_t safe_fork(void) {
   pid_t pid = fork();
   if(pid == -1) {
     perror("fork");
-    exit(-1);
+    exit(EXIT_FAILURE);
   }
 
   return pid;
@@ -116,7 +113,7 @@ int safe_pipe(int pipedes[2]) {
   int code_error = pipe(pipedes);
   if(code_error == - 1) {
     perror("pipe");
-    exit(-1);
+    exit(EXIT_FAILURE);
   }
 
   return code_error;
@@ -126,7 +123,7 @@ int safe_dup2 (int fd, int fd2) {
   int code_error = dup2(fd, fd2);
   if(code_error == -1) {
     perror("dup2");
-    exit(-1);
+    exit(EXIT_FAILURE);
   }
 
   return code_error;
@@ -136,7 +133,7 @@ int safe_msgget(key_t key, int flags) {
   int code_error = msgget(key, flags);
   if(code_error == -1) {
     perror("msgget");
-    exit(-1);
+    exit(EXIT_FAILURE);
   }
 
   return code_error;
@@ -147,7 +144,7 @@ int safe_msgsnd(int queue_id, const void* msg_buf, size_t msg_size,
   int code_error = msgsnd(queue_id, msg_buf, msg_size, msg_flags);
   if(code_error == -1) {
     perror("msgsnd");
-    exit(-1);
+    exit(EXIT_FAILURE);
   }
 
   return code_error;
@@ -158,7 +155,7 @@ ssize_t safe_msgrcv(int queue_id, void* msg_buf, size_t msg_size,
   ssize_t code_error = msgrcv(queue_id, msg_buf, msg_size, msg_type, msg_flags);
   if(code_error == -1) {
     perror("msgrcv");
-    exit(-1);
+    exit(EXIT_FAILURE);
   }
 
   return code_error;
@@ -168,7 +165,7 @@ int safe_msgctl(int queue_id, int cmd, struct msqid_ds* buf) {
   int code_error = msgctl(queue_id, cmd, buf);
   if(code_error == -1) {
     perror("msgctl");
-    exit(-1);
+  exit(EXIT_FAILURE);
   }
 
   return code_error;
@@ -189,7 +186,7 @@ mqd_t safe_mq_open (const char* name, int oflag, ...) {
 
   if (mqd == (mqd_t) -1) {
     perror("mq_open");
-    exit(-1);
+    exit(EXIT_FAILURE);
   }
   return mqd;
 }
@@ -199,7 +196,7 @@ int safe_mq_send(mqd_t mqdes, const char *msg_ptr,
   int code_error = mq_send(mqdes, msg_ptr, msg_len, msg_prio);
   if(code_error == -1) {
     perror("mq_send");
-    exit(-1);
+    exit(EXIT_FAILURE);
   }
   return code_error;
 }
@@ -209,7 +206,7 @@ ssize_t safe_mq_receive(mqd_t mqdes, char *msg_ptr,
   int code_error = mq_receive(mqdes, msg_ptr, msg_len, msg_prio);
   if(code_error == -1) {
     perror("mq_receive");
-    exit(-1);
+    exit(EXIT_FAILURE);
   }
   return code_error;
 }
@@ -218,7 +215,7 @@ int safe_mq_close(mqd_t queue_id) {
   int code_error = mq_close(queue_id);
   if(code_error == -1) {
     perror("mq_close");
-    exit(-1);
+    exit(EXIT_FAILURE);
   }
   return code_error;
 }
@@ -227,7 +224,7 @@ int safe_mq_unlink(const char* name) {
   int code_error = mq_unlink(name);
   if(code_error == -1) {
     perror("mq_inlink");
-    exit(-1);
+    exit(EXIT_FAILURE);
   }
   return code_error;
 }
@@ -236,7 +233,7 @@ int safe_semget (key_t key, int num_semaphors, int semflg) {
   int code_error = semget(key, num_semaphors, semflg);
   if(code_error == -1) {
     perror("semget");
-    exit(-1);
+    exit(EXIT_FAILURE);
   }
   return code_error;
 }
@@ -258,18 +255,21 @@ int safe_semctl (int semid, int semnum, int cmd, ...) {
   }
   if(error == -1) {
     perror("semctl");
-    exit(-1);
+    exit(EXIT_FAILURE);
   }
   return error;
 }
 //--------------------------------------------------------------
-int safe_semop(int semid, struct sembuf *operations_array,
-               unsigned number_operations) {
-  int error = semop(semid, operations_array, number_operations);
-  if(error < 0) {
-    perror("semop");
-    exit(-1);
+int safe_semop(int semid, struct sembuf *ops, unsigned nops) {
+  while(true) {
+    if (semop(semid, ops, nops) == 0)
+        return 0;
+    switch (errno) {
+        case EINTR:  continue;
+        case EAGAIN: return -1;
+        case EIDRM:  return -1;
+        default: { perror("semop"); exit(EXIT_FAILURE); }
+    }
   }
-  return error;
 }
 //--------------------------------------------------------------
