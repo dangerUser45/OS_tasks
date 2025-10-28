@@ -111,7 +111,9 @@ void man(int man_id, const struct Context* context) {
     {LOCAL_WOMEN_NUM, 0, 0}  };
   semop(context->sem_id, op_open, 3);
 
+  // wait_sem(sem_id, PRINT_MUTEX);
   printf(BLUE "I'm a %d man" RESET "\n", man_id);
+  // signal_sem(sem_id, PRINT_MUTEX);
 
   struct sembuf op_exit[] = {
     {SHOWER_CAPACITY, 1, 0},
@@ -154,7 +156,9 @@ void woman(int woman_id, const struct Context* context) {
     {LOCAL_WOMEN_NUM, 1, 0}  };
   safe_semop(context->sem_id, op_open, 3);
 
+  // wait_sem(sem_id, PRINT_MUTEX);
   printf(PINK "I'm a %d woman" RESET "\n", woman_id);
+  // signal_sem(sem_id, PRINT_MUTEX);
 
   struct sembuf op_exit[] = {
     {SHOWER_CAPACITY, 1, 0},
