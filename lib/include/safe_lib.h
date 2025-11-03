@@ -10,6 +10,7 @@ struct msqid_ds;
 struct sembuf;
 
 bool check_args(int argc, int neccesary_argc);
+bool vcheck_args(int argc, int neccesary_argc);
 
 int safe_open(const char* file, int oflag, int mode);
 int safe_close(int fd, const char* filename);

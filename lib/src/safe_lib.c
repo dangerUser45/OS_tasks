@@ -37,6 +37,14 @@ bool check_args(int argc, int neccesary_argc) {
   return false;
 }
 //--------------------------------------------------------------
+bool vcheck_args(int argc, int neccesary_argc) {
+  if (argc > neccesary_argc) {
+    fprintf(stderr, "Error: check_args: Invalid number of arguments\n");
+    exit(EXIT_FAILURE);
+  }
+  return false;
+}
+//--------------------------------------------------------------
 int safe_open(const char* file, int oflag, int mode) {
   int fd = 0;
   if(mode == 0)

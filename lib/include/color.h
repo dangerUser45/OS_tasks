@@ -12,6 +12,7 @@
 #define ORANGE          "\x1B[38;2;255;165;0m"
 #define SKY_BLUE        "\x1B[38;2;82;169;254m"
 #define PINK            "\x1B[38;2;255;110;199m"
+#define GREY            "\x1B[38;2;128;128;128m"
 
 #define RED_BGD         "\x1B[48;2;255;0;0m\x1B[38;2;255;255;255m"
 #define YELLOW_BGD      "\x1B[48;2;255;255;0m\x1B[38;2;255;255;255m"
