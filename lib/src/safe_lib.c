@@ -2,6 +2,7 @@
 #include <fcntl.h>     // for open, O_CREAT
 #include <features.h>  // for __GNU_LIBRARY__
 #include <mqueue.h>    // for mqd_t, mq_open, mq_close, mq_receive, mq_send
+#include <regex>
 #include <stdarg.h>    // for va_arg, va_end, va_list, va_start
 #include <stdbool.h>   // for true, bool, false
 #include <stdio.h>     // for perror, fprintf, stderr
@@ -10,6 +11,8 @@
 #include <sys/msg.h>   // for msgctl, msgget, msgrcv, msgsnd
 #include <sys/sem.h>   // for semctl, semget, semop, GETNCNT, GETPID, GETVAL
 #include <unistd.h>    // for close, dup2, fork, pipe, read, write
+#include <semaphore.h> 
+
 
 #include "safe_lib.h"
 
@@ -110,7 +113,7 @@ ssize_t safe_write(int fd, const char* filename, char* buf, ssize_t n)
 pid_t safe_fork(void) {
   pid_t pid = fork();
   if(pid == -1) {
-    perror("fork");
+    perror("fork()");
     exit(EXIT_FAILURE);
   }
 
@@ -120,7 +123,7 @@ pid_t safe_fork(void) {
 int safe_pipe(int pipedes[2]) {
   int code_error = pipe(pipedes);
   if(code_error == - 1) {
-    perror("pipe");
+    perror("pipe()");
     exit(EXIT_FAILURE);
   }
 
@@ -130,7 +133,7 @@ int safe_pipe(int pipedes[2]) {
 int safe_dup2 (int fd, int fd2) {
   int code_error = dup2(fd, fd2);
   if(code_error == -1) {
-    perror("dup2");
+    perror("dup2()");
     exit(EXIT_FAILURE);
   }
 
@@ -140,7 +143,7 @@ int safe_dup2 (int fd, int fd2) {
 int safe_msgget(key_t key, int flags) {
   int code_error = msgget(key, flags);
   if(code_error == -1) {
-    perror("msgget");
+    perror("msgget()");
     exit(EXIT_FAILURE);
   }
 
@@ -151,7 +154,7 @@ int safe_msgsnd(int queue_id, const void* msg_buf, size_t msg_size,
                 int msg_flags) {
   int code_error = msgsnd(queue_id, msg_buf, msg_size, msg_flags);
   if(code_error == -1) {
-    perror("msgsnd");
+    perror("msgsnd()");
     exit(EXIT_FAILURE);
   }
 
@@ -162,7 +165,7 @@ ssize_t safe_msgrcv(int queue_id, void* msg_buf, size_t msg_size,
                     long msg_type, int msg_flags) {
   ssize_t code_error = msgrcv(queue_id, msg_buf, msg_size, msg_type, msg_flags);
   if(code_error == -1) {
-    perror("msgrcv");
+    perror("msgrcv()");
     exit(EXIT_FAILURE);
   }
 
@@ -172,7 +175,7 @@ ssize_t safe_msgrcv(int queue_id, void* msg_buf, size_t msg_size,
 int safe_msgctl(int queue_id, int cmd, struct msqid_ds* buf) {
   int code_error = msgctl(queue_id, cmd, buf);
   if(code_error == -1) {
-    perror("msgctl");
+    perror("msgctl()");
   exit(EXIT_FAILURE);
   }
 
@@ -193,7 +196,7 @@ mqd_t safe_mq_open (const char* name, int oflag, ...) {
   else mqd = mq_open(name, oflag);
 
   if (mqd == (mqd_t) -1) {
-    perror("mq_open");
+    perror("mq_open()");
     exit(EXIT_FAILURE);
   }
   return mqd;
@@ -203,7 +206,7 @@ int safe_mq_send(mqd_t mqdes, const char *msg_ptr,
                  size_t msg_len, unsigned msg_prio) {
   int code_error = mq_send(mqdes, msg_ptr, msg_len, msg_prio);
   if(code_error == -1) {
-    perror("mq_send");
+    perror("mq_send()");
     exit(EXIT_FAILURE);
   }
   return code_error;
@@ -213,7 +216,7 @@ ssize_t safe_mq_receive(mqd_t mqdes, char *msg_ptr,
                         size_t msg_len, unsigned *msg_prio) {
   int code_error = mq_receive(mqdes, msg_ptr, msg_len, msg_prio);
   if(code_error == -1) {
-    perror("mq_receive");
+    perror("mq_receive()");
     exit(EXIT_FAILURE);
   }
   return code_error;
@@ -222,7 +225,7 @@ ssize_t safe_mq_receive(mqd_t mqdes, char *msg_ptr,
 int safe_mq_close(mqd_t queue_id) {
   int code_error = mq_close(queue_id);
   if(code_error == -1) {
-    perror("mq_close");
+    perror("mq_close()");
     exit(EXIT_FAILURE);
   }
   return code_error;
@@ -231,7 +234,7 @@ int safe_mq_close(mqd_t queue_id) {
 int safe_mq_unlink(const char* name) {
   int code_error = mq_unlink(name);
   if(code_error == -1) {
-    perror("mq_inlink");
+    perror("mq_inlink()");
     exit(EXIT_FAILURE);
   }
   return code_error;
@@ -240,7 +243,7 @@ int safe_mq_unlink(const char* name) {
 int safe_semget (key_t key, int num_semaphors, int semflg) { 
   int code_error = semget(key, num_semaphors, semflg);
   if(code_error == -1) {
-    perror("semget");
+    perror("semget()");
     exit(EXIT_FAILURE);
   }
   return code_error;
@@ -262,7 +265,7 @@ int safe_semctl (int semid, int semnum, int cmd, ...) {
     error = semctl(semid, semnum, cmd, arg);
   }
   if(error == -1) {
-    perror("semctl");
+    perror("semctl()");
     exit(EXIT_FAILURE);
   }
   return error;
@@ -276,8 +279,54 @@ int safe_semop(int semid, struct sembuf *ops, unsigned nops) {
         case EINTR:  continue;
         case EAGAIN: return -1;
         case EIDRM:  return -1;
-        default: { perror("semop"); exit(EXIT_FAILURE); }
+        default: { perror("semop()"); exit(EXIT_FAILURE); }
     }
   }
+}
+//--------------------------------------------------------------
+sem_t* safe_sem_open(const char* name, int oflag, ...) {
+  sem_t* sem = 0;
+  if (!(oflag & O_CREAT)) sem = sem_open(name, oflag);
+  else {
+    va_list args;
+    va_start(args, oflag);
+    unsigned long mode = va_arg(args, unsigned long);
+    unsigned int value = va_arg(args, unsigned int);
+    va_end(args);
+
+    sem = sem_open(name, oflag, mode, value);
+  }
+  if(sem == SEM_FAILED) { perror("sem_open()"); exit(EXIT_FAILURE); }
+  else return sem;
+ }
+//--------------------------------------------------------------
+int safe_sem_close(sem_t *sem) {
+  int error = sem_close(sem);
+  if(error != 0) { perror("sem_close()"); exit(EXIT_FAILURE); }
+  return error;
+}
+//--------------------------------------------------------------
+int safe_sem_wait(sem_t* sem) {
+  int error = 0;
+  while(true) {
+    error = sem_wait(sem);
+    if(error == -1) {
+      if(errno == EINTR) continue;
+      else { perror("sem_wait()"); exit(EXIT_FAILURE); }
+    }
+    else return error;
+  }
+}
+//--------------------------------------------------------------
+int safe_sem_post(sem_t* sem) {
+  int error = sem_post(sem);
+  if(error == -1) { perror("sem_post"); exit(EXIT_FAILURE); }
+  return error;
+}
+//--------------------------------------------------------------
+int safe_sem_unlink(const char* name) {
+  int error = sem_unlink(name);
+  if(error == -1) { perror("sem_unlink()"); exit(EXIT_FAILURE); }
+  return error; 
 }
 //--------------------------------------------------------------

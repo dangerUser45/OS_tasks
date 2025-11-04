@@ -15,6 +15,7 @@
 
 //--------------------------------------------------------------
 int main(int argc, char** argv) {
+  check_args(argc, 3);
   
   int fd_src =  safe_open(argv[1], O_RDONLY, 0);
   int fd_dest = safe_open(argv[2], O_CREAT | O_RDWR, 0666);
