@@ -12,6 +12,7 @@
 
 static void parent(pid_t pid, char* str, size_t length);
 static void child(pid_t parent_pid, size_t length);
+static void child_exit(char* buf, size_t length);
 
 static void receiver(int sig);
 static void sender(void);
@@ -54,7 +55,7 @@ static void parent(pid_t pid, char* str, size_t length) {
   for(size_t i = 0; i < length; ++i) {
     for(int j = 0; j < BITS_IN_BYTE; ++j) {
       bool bit = str[i] & 1 << j;
-      /* FIXME: DEBUG */ printf(GREEN "%d " RESET, bit);
+      printf(GREEN "%d " RESET, bit);
       
       if(bit == 0) kill(pid, SIGUSR1);
       else kill(pid, SIGUSR2);
@@ -82,19 +83,13 @@ static void child(pid_t parent_pid, size_t length) {
       char symbol = 0;
       for(int j = 0; j < BITS_IN_BYTE; ++j) {
         sigsuspend(&unblock_mask);
-        if(current_bit == -1) goto exit;
+        if(current_bit == -1) child_exit(buf, length);
         symbol |= current_bit << j;
         kill(parent_pid, SIGUSR1);
       }
       buf[i] = symbol;
     }
   }
-  exit:
-  printf( "Received data:\n"); fflush(stdout);
-  buf[length] = '\0';
-  printf(ORANGE "%s" RESET "\n", buf); fflush(stdout);
-
-  exit(EXIT_SUCCESS);
 }
 //--------------------------------------------------------------
 static void receiver(int sig) {
@@ -104,4 +99,12 @@ static void receiver(int sig) {
 }
 //--------------------------------------------------------------
 static void sender(void) {}
+//--------------------------------------------------------------
+static void child_exit(char* buf, size_t length) {
+  printf( "Received data:\n"); fflush(stdout);
+  buf[length] = '\0';
+  printf(ORANGE "%s" RESET "\n", buf); fflush(stdout);
+
+  exit(EXIT_SUCCESS);
+}
 //--------------------------------------------------------------
