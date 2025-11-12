@@ -1,18 +1,17 @@
-#include <errno.h>     // for EINTR, errno
-#include <fcntl.h>     // for open, O_CREAT
-#include <features.h>  // for __GNU_LIBRARY__
-#include <mqueue.h>    // for mqd_t, mq_open, mq_close, mq_receive, mq_send
-#include <regex>
-#include <stdarg.h>    // for va_arg, va_end, va_list, va_start
-#include <stdbool.h>   // for true, bool, false
-#include <stdio.h>     // for perror, fprintf, stderr
-#include <stdlib.h>    // for exit
-#include <sys/ipc.h>   // for IPC_RMID
-#include <sys/msg.h>   // for msgctl, msgget, msgrcv, msgsnd
-#include <sys/sem.h>   // for semctl, semget, semop, GETNCNT, GETPID, GETVAL
-#include <unistd.h>    // for close, dup2, fork, pipe, read, write
-#include <semaphore.h> 
-
+#include <errno.h>    // for EINTR, errno
+#include <fcntl.h>    // for open, O_CREAT
+#include <mqueue.h>   // for mqd_t, mq_open, mq_close, mq_receive, mq_send
+#include <semaphore.h>
+#include <stdarg.h>  // for va_arg, va_end, va_list, va_start
+#include <stdbool.h> // for true, bool, false
+#include <stdio.h>   // for perror, fprintf, stderr
+#include <stdlib.h>  // for exit
+#include <sys/ipc.h> // for IPC_RMID
+#include <sys/mman.h>
+#include <sys/msg.h> // for msgctl, msgget, msgrcv, msgsnd
+#include <sys/sem.h> // for semctl, semget, semop, GETNCNT, GETPID, GETVAL
+#include <unistd.h>  // for close, dup2, fork, pipe, read, write
+#include <dirent.h>
 
 #include "safe_lib.h"
 
@@ -63,8 +62,7 @@ int safe_open(const char* file, int oflag, int mode) {
 //--------------------------------------------------------------
 int safe_close(int fd, const char* filename) {
   int error = close(fd);
-  if(error ==  -1)
-    perror(filename);
+  if(error ==  -1) { perror(filename); exit(EXIT_FAILURE); }
   
   return error;
 }
@@ -73,17 +71,12 @@ int fd_write(int fd_src, int fd_dest, const char* filename_src,
              const char *filename_dest, char *buf) {
   while(true) {
     ssize_t num_sym = read(fd_src, buf, PAGE_SIZE);
-    if (num_sym < 0){
-        perror(filename_src);
-        return num_sym;
-    }
+    if (num_sym < 0){ perror(filename_src); return num_sym; }
     else if(num_sym > 0) {
       int error = safe_write(fd_dest, filename_dest, buf, num_sym);
-      if(error < 0)
-          return error;
+      if(error < 0) return error;
       continue;
-    }
-    else break;
+    } else break;
   }
 
   return 0;
@@ -328,5 +321,48 @@ int safe_sem_unlink(const char* name) {
   int error = sem_unlink(name);
   if(error == -1) { perror("sem_unlink()"); exit(EXIT_FAILURE); }
   return error; 
+}
+//--------------------------------------------------------------
+void* safe_mmap(void* start, size_t length, int prot , int flags, int fd, off_t offset) {
+  void* error = mmap(start, length, prot, flags, fd, offset);
+  if(error == MAP_FAILED) { perror("mmap()"); exit(EXIT_FAILURE); }
+  return error;
+}
+//--------------------------------------------------------------
+int safe_munmap(void *start, size_t length) {
+  int error = munmap(start, length);
+  if(error == -1) { perror("munmap()"); exit(EXIT_FAILURE); }
+  return error;
+}
+//--------------------------------------------------------------
+int safe_shm_open(const char *name, int oflag, mode_t mode) {
+  int error =  shm_open(name, oflag, mode);
+  if(error == -1) { perror("shm_open()"); exit(EXIT_FAILURE); }
+  return error;
+}
+//--------------------------------------------------------------
+int safe_shm_unlink(const char* name) {
+  int error = shm_unlink(name);
+  if(error == -1) { perror("shm_unlink()"); exit(EXIT_FAILURE); }
+  return error;
+}
+//--------------------------------------------------------------
+DIR* safe_opendir(const char* name) {
+  DIR* dir = opendir(name);
+  if(!dir) { perror("opendir()"); exit(EXIT_FAILURE); }
+  return dir;
+}
+//--------------------------------------------------------------
+struct dirent* safe_readdir(DIR* dir) {
+  errno = 0;
+  struct dirent* entry = readdir(dir);
+  if(!entry && errno != 0) { perror("readdir()"); exit(EXIT_FAILURE); }
+  return entry;
+}
+//--------------------------------------------------------------
+int safe_closedir(DIR* dir) {
+  int error = closedir(dir);
+  if(error == -1) { perror("closedir()"); exit(EXIT_FAILURE); }
+  return error;
 }
 //--------------------------------------------------------------

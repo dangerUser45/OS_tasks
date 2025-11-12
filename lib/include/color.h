@@ -16,5 +16,6 @@
 
 #define RED_BGD         "\x1B[48;2;255;0;0m\x1B[38;2;255;255;255m"
 #define YELLOW_BGD      "\x1B[48;2;255;255;0m\x1B[38;2;255;255;255m"
+#define ESAB_COLOR      "\x1B[48;2;0;0;0m\x1B[38;2;255;255;0m"
 
 #define COLOR_TEXT(color, text) color text RESET

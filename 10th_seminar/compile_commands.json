@@ -1,0 +1,32 @@
+[
+  {
+    "directory": "/home/danek/projects/computer_science_3rd_semester/9th_seminar",
+    "file": "src/handler.c",
+    "output": "build/handler.o",
+    "arguments": [
+      "clang",
+      "-c",
+      "src/handler.c",
+      "-I../lib/include",
+      "-Wall",
+      "-Wextra",
+      "-o",
+      "build/handler.o"
+    ]
+  },
+  {
+    "directory": "/home/danek/projects/computer_science_3rd_semester/9th_seminar",
+    "file": "src/signal_cat.c",
+    "output": "build/signal_cat.o",
+    "arguments": [
+      "clang",
+      "-c",
+      "src/signal_cat.c",
+      "-I../lib/include",
+      "-Wall",
+      "-Wextra",
+      "-o",
+      "build/signal_cat.o"
+    ]
+  }
+]

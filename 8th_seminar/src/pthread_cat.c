@@ -42,10 +42,6 @@ int main(int argc, char** argv) {
   pthread_mutex_t mutex = {};
   int error = pthread_mutex_init(&mutex, NULL);
 
-  struct Monitor monitor = {.monitor_mutex = mutex}; 
-  context
-
-  pthread_t reader_thread = 0;
   error = pthread_create(&reader_thread, NULL,
               reader, buf);
   if(error != 0) { perror("pthread_create"); exit(-1); }
