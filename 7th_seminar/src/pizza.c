@@ -15,6 +15,63 @@
 #include "color.h"
 #include "safe_lib.h"
 
+
+/*                  A pseudo-code pizza cooking algorithm                     *\
+                    only with semaphores and shared memory
+
+  num_tables, num_chiefs, num_couriers; 
+
+  semaphore ready, empty, mutex;
+  shm table_space, shm table_context;
+
+  ready = 0;
+  empty = num_tables;
+  mutex = 1;
+
+  for(i = 0; i < num_table; ++i) {
+    table_space[i]   = empty;
+    table_context[i] = empty;
+  }
+
+  chief() {
+    while (the working day is going on) {
+      --empty;
+
+      --mutex;
+      num_found_table = found_free_table();
+      table_context[num_found_table] = taken;
+      ++mutex;
+
+      cook_pizza(table_space[num_found_table]); 
+
+      --mutex;
+      table_context[num_found_table] = ready;
+      ++ready;
+      ++mutex;
+    }
+  }
+    
+
+  courier() {
+    while (not all chiefs are left && not all pizzas are delivered) {
+      --ready;
+
+      --mutex;
+      num_found_table = found_table_with_cooked_pizza();
+      table_context[num_found_table] = taken;
+      ++mutex;
+
+      take_cooked_pizza_from_table(table_space[num_found_table]);
+
+      --mutex;
+      table_context[num_found_table] = empty;
+      ++empty;
+      ++mutex;
+    }
+  }
+
+\*                                                                            */
+
 #define $ fprintf(stderr, "%s:%d\n", __FILE__, __LINE__);
 
 const int NECCESARY_NUM_COOKED_PIZZA = 100;
