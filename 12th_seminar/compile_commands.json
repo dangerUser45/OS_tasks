@@ -1,17 +1,17 @@
 [
   {
     "directory": "/home/danek/projects/computer_science_3rd_semester/11th_seminar",
-    "file": "src/XXX.c",
-    "output": "build/XXX.o",
+    "file": "src/chat.c",
+    "output": "build/chat.o",
     "arguments": [
       "clang",
       "-c",
-      "src/XXX.c",
+      "src/chat.c",
       "-I../lib/include",
       "-Wall",
       "-Wextra",
       "-o",
-      "build/XXX.o"
+      "build/chat.o"
     ]
   }
 ]

@@ -296,7 +296,7 @@ static void cook_pizza(const struct Context* context,
 }
 //--------------------------------------------------------------
 static const char* print_num(int num) {
-  if(num == 1)      return "1st";
+  if(num == 1) return "1st";
   else if(num == 2) return "2nd";
   else if(num == 3) return "3rd";
   else {
@@ -339,7 +339,7 @@ static void take_pizza(char* table, int num_human) {
     exit(EXIT_FAILURE);
   }
   // work immitation
-   printf(YELLOW "I'm a courier №%d and i taked the pizza!" RESET "\n", num_human);
+  printf(YELLOW "I'm a courier №%d and i taked the pizza!" RESET "\n", num_human);
   fflush(stdout);
   
   usleep(500000);
