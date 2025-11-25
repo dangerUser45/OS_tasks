@@ -5,7 +5,7 @@
 ![Semester](https://img.shields.io/badge/Semester-3rd-orange)
 [![Repo](https://img.shields.io/badge/GitHub-OS__tasks-black?logo=github)](https://github.com/dangerUser45/OS_tasks)
 
-![picture](preview.png)
+<img src="preview.png" width="300">
 
 Семинарские работы по системному программированию на языке **C**.  
 Каждый семинар посвящён отдельным механизмам Linux: процессы, каналы, IPC, семафоры, mmap, pthreads, файловые системы и сигналы.
