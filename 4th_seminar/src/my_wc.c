@@ -10,6 +10,7 @@
 #include <sys/wait.h>
 #include <unistd.h>
 
+#include "safe_lib.h"
 struct wc_stat {
   ssize_t bytes_counter;
   ssize_t words_counter;
@@ -21,11 +22,9 @@ struct word_state_t {
   bool in_word;
 };
 
-int safe_open(const char* file, int oflag, int mode);
-int safe_close(int fd, const char* filename);
-int fd_write(int fd_src, int fd_dest, const char *filename_src,
+
+int fd_stat_write(int fd_src, int fd_dest, const char *filename_src,
              const char* filename_dest, char* buf, struct wc_stat* stat);
-ssize_t safe_write(int fd, const char* filename, char* buf, ssize_t n);
 
 void find_lines(ssize_t* counter, const char* str);
 void find_words(ssize_t* counter, const char* str, struct word_state_t* state);
@@ -50,7 +49,7 @@ int main(int argc, char** argv)
   if(pid != 0) // parent pid - only reader
   {
       safe_close(fds[1], "pipe input");
-      fd_write(fds[0], 1,
+      fd_stat_write(fds[0], 1,
   "pipe output", "pipe_input", buf, &stat);
       int status = 0;
       wait(&status);
@@ -67,30 +66,7 @@ int main(int argc, char** argv)
   }
 }
 //--------------------------------------------------------------
-int safe_open(const char* file, int oflag, int mode)
-{
-    int fd = 0;
-    if(mode == 0)
-        fd = open(file, oflag);
-    else
-        fd = open(file, oflag, mode);
-    
-    if(fd < 0)
-        fprintf(stderr, "%s: %s\n", file, strerror(errno));
-    
-    return fd;
-}
-//--------------------------------------------------------------
-int safe_close(int fd, const char* filename)
-{
-    int error = close(fd);
-    if(error < 0)
-        fprintf(stderr, "%s: %s\n", filename, strerror(errno));
-
-    return error;
-}
-//--------------------------------------------------------------
-int fd_write(int fd_src, int fd_dest, const char* filename_src,
+int fd_stat_write(int fd_src, int fd_dest, const char* filename_src,
              const char *filename_dest, char *buf, struct wc_stat* stat) {
   struct word_state_t state = {' ', 0};
   while(true)
@@ -115,36 +91,6 @@ int fd_write(int fd_src, int fd_dest, const char* filename_src,
     }
     else break;
   }
-    return 0;
-}
-//--------------------------------------------------------------
-ssize_t safe_write(int fd, const char* filename, char* buf, ssize_t n)
-{
-    ssize_t num_sym = 0;
-
-    while(true)
-    {
-        buf += num_sym; n -= num_sym;
-        num_sym = write(fd, buf, n);
-        if(num_sym < 0)
-        {
-            if(errno != EINTR)
-            {
-                fprintf(stderr, "%s: %s\n", filename, strerror(errno));
-                return num_sym;
-            }
-            else
-                continue;
-        }
-
-        else if(num_sym == n)
-            return num_sym;
-        else if(num_sym == 0)
-            break;
-        else
-            continue;
-    }
-
     return 0;
 }
 //--------------------------------------------------------------

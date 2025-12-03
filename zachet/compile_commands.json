@@ -1,0 +1,17 @@
+[
+  {
+    "directory": "/home/danek/projects/computer_science_3rd_semester/zachet",
+    "file": "src/bridge.c",
+    "output": "build/bridge.o",
+    "arguments": [
+      "clang",
+      "-c",
+      "src/bridge.c",
+      "-I../lib/include",
+      "-Wall",
+      "-Wextra",
+      "-o",
+      "build/bridge.o"
+    ]
+  }
+]

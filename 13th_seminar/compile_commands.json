@@ -1,0 +1,17 @@
+[
+  {
+    "directory": "/home/danek/projects/computer_science_3rd_semester/11th_seminar",
+    "file": "src/select_wc.c",
+    "output": "build/select_wc.o",
+    "arguments": [
+      "clang",
+      "-c",
+      "src/select_wc.c",
+      "-I../lib/include",
+      "-Wall",
+      "-Wextra",
+      "-o",
+      "build/select_wc.o"
+    ]
+  }
+]
