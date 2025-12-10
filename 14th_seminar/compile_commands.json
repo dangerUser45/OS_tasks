@@ -1,0 +1,17 @@
+[
+  {
+    "directory": "/home/danek/projects/computer_science_3rd_semester/14th_seminar",
+    "file": "src/size_pipe.c",
+    "output": "build/size_pipe.o",
+    "arguments": [
+      "clang",
+      "-c",
+      "src/size_pipe.c",
+      "-I../lib/include",
+      "-Wall",
+      "-Wextra",
+      "-o",
+      "build/size_pipe.o"
+    ]
+  }
+]
